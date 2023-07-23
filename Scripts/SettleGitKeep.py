@@ -13,6 +13,8 @@ __PROJECT_DIR = "" # Absolute Path
 __IGNORE_DIR_LIST = [] # Relative Path
 __IGNORE_FILE_PATH_LIST = [] # Relative Path
 __IGNORE_FILE_PATTERN_LIST = [] # File Name Pattern
+__NOTHING_CHANGE = True
+
 
 def __Init():
     global __PROJECT_DIR
@@ -34,28 +36,33 @@ def __Init():
     # Init 3 list
     for pattern in gitIgnorePatternList:
         if ("/" in pattern):
-            if (pattern[len(pattern)-1] == "/"): # dir
+            if (pattern[len(pattern) - 1] == "/"): # 目录
                 __IGNORE_DIR_LIST.extend(glob.glob(pattern, root_dir=__PROJECT_DIR, recursive=True))
-            else: # file path
-                __IGNORE_FILE_PATH_LIST.extend(glob.glob(pattern, root_dir=__PROJECT_DIR, recursive=True))
-        else: # filename pattern
+            else: # 指定路径的文件
+                __IGNORE_FILE_PATH_LIST.extend(
+                    glob.glob(pattern, root_dir=__PROJECT_DIR, recursive=True)
+                )
+        else: # 文件模式串
             __IGNORE_FILE_PATTERN_LIST.append(pattern)
 
-def __IsIgnoreDir(dir:str) -> bool:
+
+def __IsIgnoreDir(dir: str) -> bool:
     if (os.path.basename(dir) == ".git"): return True
     for ignoreDir in __IGNORE_DIR_LIST:
         if (os.path.samefile(ignoreDir, dir)): return True
     return False
 
-def __IsIgnoreFile(filepath:str) -> bool:
-    if (filepath in  __IGNORE_FILE_PATH_LIST):
-        return True
+
+def __IsIgnoreFile(filepath: str) -> bool:
+    for ignoreFilePath in __IGNORE_FILE_PATH_LIST:
+        if (os.path.samefile(filepath, ignoreFilePath)): return True
     for pattern in __IGNORE_FILE_PATTERN_LIST:
         if (fnmatch.fnmatch(os.path.basename(filepath), pattern)):
             return True
     return False
 
-def __NeedGitKeep(dir:str) -> bool:
+
+def __NeedGitKeep(dir: str) -> bool:
     sublist = os.listdir(dir)
 
     for subbase in sublist:
@@ -72,25 +79,27 @@ def __NeedGitKeep(dir:str) -> bool:
 
     return True
 
-def __SettleGitKeep(dir:str):
+
+def __SettleGitKeep(dir: str):
     if (__IsIgnoreDir(dir)): return
 
     gitkeepPath = os.path.join(dir, ".gitkeep")
 
     if (__NeedGitKeep(dir)):
         if (not os.path.exists(gitkeepPath)):
-            print("create: {}".format(os.path.relpath(gitkeepPath, __PROJECT_DIR)))
             file = open(gitkeepPath, 'w')
             file.close()
+            print("create: {}".format(os.path.relpath(gitkeepPath, __PROJECT_DIR)))
     elif (os.path.exists(gitkeepPath)):
-        print("delete: {}".format(os.path.relpath(gitkeepPath, __PROJECT_DIR)))
         os.remove(gitkeepPath)
+        print("delete: {}".format(os.path.relpath(gitkeepPath, __PROJECT_DIR)))
 
     sublist = os.listdir(dir)
     for subbase in sublist:
         subpath = os.path.join(dir, subbase)
         if (os.path.isdir(subpath)):
             __SettleGitKeep(subpath)
+
 
 def Main():
     __Init()
@@ -100,5 +109,6 @@ def Main():
     # print(__IGNORE_FILE_PATTERN_LIST)
 
     __SettleGitKeep(__PROJECT_DIR)
+
 
 Main()
