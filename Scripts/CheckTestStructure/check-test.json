@@ -1,0 +1,14 @@
+{
+  "testFileSuffix": "Test",
+  "testFolder": "tests",
+  "targetFolders": [
+    "src"
+  ],
+  "ignoreFoldersInTest": [
+    "obj",
+    "bin"
+  ],
+  "ignoreTestFiles": [
+    "src/IgnoreSampleFiles.cs"
+  ]
+}
