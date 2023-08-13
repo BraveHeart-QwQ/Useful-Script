@@ -97,7 +97,7 @@ class TestComments(object):
         # Get Main Content
         mainContent = ""
         with open(self._filePath, "r") as file:
-            if (self.exists): # skip beginning comments
+            if (self.exists): # 跳过开头的注释
                 for i in range(len(self._currComments)):
                     file.readline()
             mainContent = file.read()
@@ -144,7 +144,7 @@ class Program(object):
         _PROGRAM = self
 
     def _Init(self):
-        with open(os.path.join(self.projectDir, "check-test.json")) as file:
+        with open(os.path.join(self.projectDir, ".check-test")) as file:
             checkTestConfig = json.load(file)
             self.testFileSuffix = checkTestConfig.get("self.testFileSuffix", self.testFileSuffix)
             self.targetDirList = checkTestConfig.get("targetFolders", self.targetDirList)
@@ -209,6 +209,10 @@ class Program(object):
                         self.AddLog("Test", "W", "Redundant test", filePath)
 
     def _CheckExistingTest(self, targetFilePath: str) -> int:
+        """
+        :targetFilePath: 目标文件的路径，该函数会假设它对应的测试文件存在，并自动获取该测试文件路径
+        """
+
         testFilePath = self._GetTestFilePath(targetFilePath).replace(os.sep, "/")
         comment = TestComments(testFilePath)
 
@@ -285,12 +289,12 @@ class Program(object):
         return True
 
     def _GetTestFilePath(self, targetFilePath: str) -> str:
-        # NOTE Here it is assumed that filePath ends with .cs
+        # NOTE 这里假设 filePath 是以 .cs 结尾的
         tempPath = "".join([targetFilePath[:-3], self.testFileSuffix, ".cs"])
         return os.path.join(self.testDir, tempPath)
 
     def _GetTargetFilePath(self, testFilePath: str) -> str:
-        # NOTE Here it is assumed that filePath ends with Test.cs
+        # NOTE 这里假设 filePath 是以 Test.cs 为结尾的
         tempPath = "".join([testFilePath[:-(len(self.testFileSuffix) + 3)], ".cs"])
         return os.path.relpath(tempPath, self.testDir)
 
