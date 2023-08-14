@@ -222,11 +222,17 @@ class Program(object):
 
         if (self._repo):
             if (not self._repo.git.diff("HEAD", targetFilePath)):
-                targetLastCommit = next(self._repo.iter_commits(paths=targetFilePath, max_count=1))
-                targetFileLMT = targetLastCommit.committed_date
+                try:
+                    targetLastCommit = next(self._repo.iter_commits(paths=targetFilePath, max_count=1))
+                    targetFileLMT = targetLastCommit.committed_date
+                except StopIteration:
+                    pass
             if (not self._repo.git.diff("HEAD", testFilePath)):
-                testLastCommit = next(self._repo.iter_commits(paths=testFilePath, max_count=1))
-                testFileLMT = testLastCommit.committed_date
+                try:
+                    testLastCommit = next(self._repo.iter_commits(paths=testFilePath, max_count=1))
+                    testFileLMT = testLastCommit.committed_date
+                except StopIteration:
+                    pass
 
         if (targetFileLMT > testFileLMT):
             if (not comment.exists):
